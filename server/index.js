@@ -2,6 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { PrismaClient } from '@prisma/client'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import authRoutes from './routes/auth.js'
 import userRoutes from './routes/user.js'
 import depositRoutes from './routes/deposits.js'
@@ -13,6 +15,9 @@ import { accrueAllMinings } from './services/miningAccrual.js'
 import cron from 'node-cron'
 
 dotenv.config()
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
 const prisma = new PrismaClient()
@@ -38,6 +43,12 @@ app.use('/api/public', publicRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
+
+// Serve frontend in production
+app.use(express.static(path.join(__dirname, '../dist')))
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
+})
 
 // Mining accrual cron - runs every 10 minutes
 cron.schedule('*/10 * * * *', async () => {
