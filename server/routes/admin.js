@@ -173,6 +173,41 @@ router.post('/minings/accrue-all', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
+router.put('/minings/:id', async (req, res) => {
+  try {
+    const { investedAmount, dailyEarning, totalEarned, endDate, status } = req.body
+    const mining = await req.prisma.userMining.findUnique({ where: { id: req.params.id } })
+    if (!mining) return res.status(404).json({ error: 'Mining not found' })
+
+    const parsedTotal = parseFloat(totalEarned)
+    const difference = parsedTotal - mining.totalEarned
+
+    const updated = await req.prisma.userMining.update({
+      where: { id: req.params.id },
+      data: {
+        investedAmount: parseFloat(investedAmount),
+        dailyEarning: parseFloat(dailyEarning),
+        totalEarned: parsedTotal,
+        endDate: new Date(endDate),
+        status
+      }
+    })
+
+    if (difference !== 0) {
+      const balanceField = `balance${mining.cryptoType}`
+      await req.prisma.user.update({
+        where: { id: mining.userId },
+        data: {
+          [balanceField]: { increment: difference },
+          totalEarned: { increment: difference }
+        }
+      })
+    }
+
+    res.json(updated)
+  } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
 // Settings
 router.get('/settings', async (req, res) => {
   try { res.json(await req.prisma.adminSetting.findMany()) }

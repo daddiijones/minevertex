@@ -78,4 +78,5 @@ export const adminApi = {
   updateSettings: (body) => api('/admin/settings', { method: 'PUT', body }),
   minings: () => api('/admin/minings'),
   accrueMinings: () => api('/admin/minings/accrue-all', { method: 'POST' }),
+  updateMining: (id, body) => api(`/admin/minings/${id}`, { method: 'PUT', body }),
 }
