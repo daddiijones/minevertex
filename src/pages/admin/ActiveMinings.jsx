@@ -76,9 +76,9 @@ export default function AdminMinings() {
         </div>
       </div>
 
-      <div className="dashboard-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="table-responsive">
-          <table className="table">
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="table-container">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>User</th>
@@ -99,22 +99,19 @@ export default function AdminMinings() {
                 filtered.map(m => (
                   <tr key={m.id}>
                     <td>
-                      <div style={{ fontWeight: 600, color: '#fff' }}>{m.user?.fullName}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{m.user?.email}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{m.user?.email}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{m.user?.fullName}</div>
                     </td>
                     <td>
                       <div style={{ display: 'inline-flex', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: 20, fontSize: '0.85rem' }}>
                         {m.plan?.name}
                       </div>
                     </td>
-                    <td>{m.investedAmount} {m.cryptoType}</td>
-                    <td style={{ color: 'var(--accent-green)' }}>+{m.dailyEarning} / day</td>
-                    <td style={{ fontWeight: 600 }}>{m.totalEarned.toFixed(6)} {m.cryptoType}</td>
+                    <td style={{ fontWeight: 600 }}>{m.investedAmount} {m.cryptoType}</td>
+                    <td style={{ color: 'var(--accent-green)', fontWeight: 600 }}>+{m.dailyEarning} / day</td>
+                    <td style={{ fontWeight: 700 }}>{m.totalEarned.toFixed(6)} {m.cryptoType}</td>
                     <td>
-                      <span className={`status-badge status-${m.status.toLowerCase()}`}>
-                        {m.status === 'ACTIVE' && <Activity size={12} />}
-                        {m.status === 'COMPLETED' && <CheckCircle size={12} />}
-                        {m.status === 'CANCELLED' && <XCircle size={12} />}
+                      <span className={`badge badge-${m.status.toLowerCase()}`}>
                         {m.status}
                       </span>
                     </td>
