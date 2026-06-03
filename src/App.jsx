@@ -29,6 +29,7 @@ import StatusPage from './pages/static/StatusPage'
 import { TermsOfService, PrivacyPolicy, RefundPolicy, AmlPolicy } from './pages/static/Legal'
 import Reviews from './pages/static/Reviews'
 import { ToastProvider } from './components/Toast'
+import FloatingSupport from './components/FloatingSupport'
 
 export const AuthContext = createContext(null)
 
@@ -108,6 +109,7 @@ function App() {
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        <FloatingSupport />
       </BrowserRouter>
       </ToastProvider>
     </AuthContext.Provider>
