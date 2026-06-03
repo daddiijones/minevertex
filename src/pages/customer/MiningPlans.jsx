@@ -18,6 +18,7 @@ export default function MiningPlans() {
   const [loading, setLoading] = useState(true)
   const [purchasing, setPurchasing] = useState(null)
   const [amount, setAmount] = useState('')
+  const [cryptoType, setCryptoType] = useState('USDT')
   const [submitting, setSubmitting] = useState(false)
   const toast = useToast()
   const navigate = useNavigate()
@@ -30,13 +31,14 @@ export default function MiningPlans() {
     if (!purchasing || !amount) return
     setSubmitting(true)
     try {
-      await miningApi.purchase({ planId: purchasing.id, amount: parseFloat(amount), cryptoType: 'USDT' })
+      await miningApi.purchase({ planId: purchasing.id, amount: parseFloat(amount), cryptoType })
       toast.success(
-        `Your ${purchasing.name} plan is now active! Mining has started and you'll earn $${fmt(parseFloat(amount) * purchasing.dailyROI / 100)} daily.`,
+        `Your ${purchasing.name} plan is now active! Mining has started and you'll earn ${fmt(parseFloat(amount) * purchasing.dailyROI / 100)} ${cryptoType} daily.`,
         '⛏ Mining Started!'
       )
       setPurchasing(null)
       setAmount('')
+      setCryptoType('USDT')
       setTimeout(() => navigate('/my-minings'), 2000)
     } catch (err) {
       toast.error(err.message, 'Purchase Failed')
@@ -88,12 +90,25 @@ export default function MiningPlans() {
         <div className="modal-overlay" onClick={() => setPurchasing(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <h3>Purchase {purchasing.name} Plan</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 16 }}>Your USDT balance will be debited immediately.</p>
-            <div className="form-group"><label className="form-label">Investment Amount (USDT)</label><input className="form-input" type="number" value={amount} onChange={e => setAmount(e.target.value)} min={purchasing.minDeposit} max={purchasing.maxDeposit} /></div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 16 }}>Select the currency you wish to pay with.</p>
+            
+            <div className="form-group" style={{ marginBottom: 12 }}>
+              <label className="form-label">Payment Currency</label>
+              <select className="form-input" value={cryptoType} onChange={e => setCryptoType(e.target.value)}>
+                <option value="USDT">USDT</option>
+                <option value="BTC">BTC</option>
+                <option value="ETH">ETH</option>
+                <option value="BNB">BNB</option>
+                <option value="SOL">SOL</option>
+                <option value="LTC">LTC</option>
+              </select>
+            </div>
+
+            <div className="form-group"><label className="form-label">Investment Amount ({cryptoType})</label><input className="form-input" type="number" value={amount} onChange={e => setAmount(e.target.value)} min={purchasing.minDeposit} max={purchasing.maxDeposit} /></div>
             {amount && <div style={{ background: 'rgba(0,212,255,0.06)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Daily Earning</span><span style={{ fontWeight: 700, color: 'var(--success)' }}>${fmt(parseFloat(amount) * purchasing.dailyROI / 100)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Total Return</span><span style={{ fontWeight: 700, color: 'var(--accent-cyan)' }}>${fmt(parseFloat(amount) * purchasing.totalROI / 100)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: 8 }}><span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Debit Amount</span><span style={{ fontWeight: 700, color: 'var(--danger)' }}>-${fmt(parseFloat(amount))} USDT</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Daily Earning</span><span style={{ fontWeight: 700, color: 'var(--success)' }}>+{fmt(parseFloat(amount) * purchasing.dailyROI / 100)} {cryptoType}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Total Return</span><span style={{ fontWeight: 700, color: 'var(--accent-cyan)' }}>+{fmt(parseFloat(amount) * purchasing.totalROI / 100)} {cryptoType}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: 8 }}><span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Debit Amount</span><span style={{ fontWeight: 700, color: 'var(--danger)' }}>-{fmt(parseFloat(amount))} {cryptoType}</span></div>
             </div>}
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setPurchasing(null)}>Cancel</button>
