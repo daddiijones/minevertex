@@ -25,6 +25,8 @@ export async function api(endpoint, options = {}) {
 export const authApi = {
   login: (body) => api('/auth/login', { method: 'POST', body }),
   register: (body) => api('/auth/register', { method: 'POST', body }),
+  forgotPassword: (body) => api('/auth/forgot-password', { method: 'POST', body }),
+  resetPassword: (body) => api('/auth/reset-password', { method: 'POST', body }),
 }
 
 export const userApi = {

@@ -5,6 +5,8 @@ import CustomerLayout from './layouts/CustomerLayout'
 import AdminLayout from './layouts/AdminLayout'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
+import ForgotPassword from './pages/auth/ForgotPassword'
+import ResetPassword from './pages/auth/ResetPassword'
 import CustomerDashboard from './pages/customer/Dashboard'
 import Deposit from './pages/customer/Deposit'
 import Withdraw from './pages/customer/Withdraw'
@@ -66,6 +68,8 @@ function App() {
           <Route path="/" element={user ? <Navigate to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} /> : <LandingPage />} />
           <Route path="/login" element={user ? <Navigate to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} /> : <Login />} />
           <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
+          <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" /> : <ForgotPassword />} />
+          <Route path="/reset-password" element={user ? <Navigate to="/dashboard" /> : <ResetPassword />} />
 
           {/* Static Pages */}
           <Route path="/help" element={<HelpCenter />} />
