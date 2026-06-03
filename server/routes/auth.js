@@ -56,7 +56,6 @@ router.post('/login', async (req, res) => {
   }
 })
 
-export default router
 
 // Forgot Password
 router.post('/forgot-password', async (req, res) => {
@@ -109,3 +108,5 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).json({ error: err.message })
   }
 })
+
+export default router
