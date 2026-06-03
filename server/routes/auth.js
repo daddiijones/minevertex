@@ -65,8 +65,7 @@ router.post('/forgot-password', async (req, res) => {
 
     const user = await req.prisma.user.findUnique({ where: { email } })
     if (!user) {
-      // Don't leak whether user exists
-      return res.json({ message: 'If the email exists, a reset link has been sent.' })
+      return res.status(400).json({ error: 'This email is not registered' })
     }
 
     // Create a one-time link valid for 15 minutes. We use the current password hash in the secret so it invalidates once changed.
@@ -75,7 +74,7 @@ router.post('/forgot-password', async (req, res) => {
     const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${token}&id=${user.id}`
 
     await sendResetEmail(user.email, resetLink)
-    res.json({ message: 'If the email exists, a reset link has been sent.' })
+    res.json({ message: 'A reset link has been sent to your email.' })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

@@ -8,18 +8,18 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const { showToast } = useToast()
+  const toast = useToast()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!email) return showToast('error', 'Please enter your email')
+    if (!email) return toast.error('Please enter your email')
     setLoading(true)
     try {
       const res = await authApi.forgotPassword({ email })
-      showToast('success', res.message || 'Check your email for the reset link')
+      toast.success(res.message || 'Check your email for the reset link')
       setSuccess(true)
     } catch (err) {
-      showToast('error', err.message || 'Failed to send reset link')
+      toast.error(err.message || 'Failed to send reset link')
     } finally {
       setLoading(false)
     }

@@ -13,7 +13,7 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { showToast } = useToast()
+  const toast = useToast()
 
   const token = searchParams.get('token')
   const id = searchParams.get('id')
@@ -21,19 +21,19 @@ export default function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (password !== confirmPassword) {
-      return showToast('error', 'Passwords do not match')
+      return toast.error('Passwords do not match')
     }
     if (!token || !id) {
-      return showToast('error', 'Invalid reset link')
+      return toast.error('Invalid reset link')
     }
 
     setLoading(true)
     try {
       await authApi.resetPassword({ id, token, password })
-      showToast('success', 'Password reset successfully')
+      toast.success('Password reset successfully')
       setSuccess(true)
     } catch (err) {
-      showToast('error', err.message || 'Failed to reset password')
+      toast.error(err.message || 'Failed to reset password')
     } finally {
       setLoading(false)
     }
