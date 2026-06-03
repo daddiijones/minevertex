@@ -1,7 +1,11 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { sendResetEmail } from '../services/email.js'
+import { sendResetEmail, sendOTPEmail } from '../services/email.js'
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
 
 const router = Router()
 
@@ -12,14 +16,32 @@ router.post('/register', async (req, res) => {
     if (!email || !password || !fullName) return res.status(400).json({ error: 'All fields required' })
 
     const existing = await req.prisma.user.findUnique({ where: { email } })
-    if (existing) return res.status(400).json({ error: 'Email already registered' })
+    if (existing) {
+      if (existing.isVerified) {
+        return res.status(400).json({ error: 'Email already registered and verified' })
+      } else {
+        // Exists but not verified, let's update password/name and resend OTP
+        const otpCode = generateOTP()
+        const otpExpiresAt = new Date(Date.now() + 10 * 60000)
+        const hashed = await bcrypt.hash(password, 10)
+        
+        await req.prisma.user.update({
+          where: { email },
+          data: { password: hashed, fullName, otpCode, otpExpiresAt }
+        })
+        await sendOTPEmail(email, otpCode)
+        return res.json({ message: 'OTP sent to email', userId: existing.id })
+      }
+    }
 
     const hashed = await bcrypt.hash(password, 10)
+    const otpCode = generateOTP()
+    const otpExpiresAt = new Date(Date.now() + 10 * 60000)
+
     const user = await req.prisma.user.create({
-      data: { email, password: hashed, fullName }
+      data: { email, password: hashed, fullName, otpCode, otpExpiresAt, isVerified: false }
     })
 
-    // Handle referral
     if (referralCode) {
       const referrer = await req.prisma.user.findUnique({ where: { referralCode } })
       if (referrer) {
@@ -28,6 +50,29 @@ router.post('/register', async (req, res) => {
         })
       }
     }
+
+    await sendOTPEmail(email, otpCode)
+    res.json({ message: 'OTP sent to email', userId: user.id })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Verify Register
+router.post('/verify-register', async (req, res) => {
+  try {
+    const { userId, code } = req.body
+    const user = await req.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) return res.status(400).json({ error: 'User not found' })
+
+    if (user.otpCode !== code || user.otpExpiresAt < new Date()) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' })
+    }
+
+    await req.prisma.user.update({
+      where: { id: userId },
+      data: { isVerified: true, otpCode: null, otpExpiresAt: null }
+    })
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' })
     const { password: _, ...userData } = user
@@ -47,6 +92,38 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password)
     if (!valid) return res.status(400).json({ error: 'Invalid credentials' })
     if (!user.isActive) return res.status(403).json({ error: 'Account suspended' })
+    if (!user.isVerified) return res.status(403).json({ error: 'Email not verified. Please register again to verify.' })
+
+    const otpCode = generateOTP()
+    const otpExpiresAt = new Date(Date.now() + 10 * 60000)
+
+    await req.prisma.user.update({
+      where: { id: user.id },
+      data: { otpCode, otpExpiresAt }
+    })
+
+    await sendOTPEmail(email, otpCode)
+    res.json({ message: 'OTP sent to email', userId: user.id })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Verify Login
+router.post('/verify-login', async (req, res) => {
+  try {
+    const { userId, code } = req.body
+    const user = await req.prisma.user.findUnique({ where: { id: userId } })
+    if (!user) return res.status(400).json({ error: 'User not found' })
+
+    if (user.otpCode !== code || user.otpExpiresAt < new Date()) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' })
+    }
+
+    await req.prisma.user.update({
+      where: { id: userId },
+      data: { otpCode: null, otpExpiresAt: null }
+    })
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' })
     const { password: _, ...userData } = user

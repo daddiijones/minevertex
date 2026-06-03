@@ -24,7 +24,9 @@ export async function api(endpoint, options = {}) {
 
 export const authApi = {
   login: (body) => api('/auth/login', { method: 'POST', body }),
+  verifyLogin: (body) => api('/auth/verify-login', { method: 'POST', body }),
   register: (body) => api('/auth/register', { method: 'POST', body }),
+  verifyRegister: (body) => api('/auth/verify-register', { method: 'POST', body }),
   forgotPassword: (body) => api('/auth/forgot-password', { method: 'POST', body }),
   resetPassword: (body) => api('/auth/reset-password', { method: 'POST', body }),
 }
@@ -74,4 +76,6 @@ export const adminApi = {
   updatePlan: (id, body) => api(`/admin/plans/${id}`, { method: 'PUT', body }),
   settings: () => api('/admin/settings'),
   updateSettings: (body) => api('/admin/settings', { method: 'PUT', body }),
+  minings: () => api('/admin/minings'),
+  accrueMinings: () => api('/admin/minings/accrue-all', { method: 'POST' }),
 }

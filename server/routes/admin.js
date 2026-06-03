@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { authMiddleware, adminMiddleware } from '../middleware/auth.js'
+import { accrueAllMinings } from '../services/miningAccrual.js'
 
 const router = Router()
 router.use(authMiddleware, adminMiddleware)
@@ -134,6 +135,27 @@ router.post('/plans', async (req, res) => {
 router.put('/plans/:id', async (req, res) => {
   try { res.json(await req.prisma.miningPlan.update({ where: { id: req.params.id }, data: req.body })) }
   catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+// Minings
+router.get('/minings', async (req, res) => {
+  try {
+    const minings = await req.prisma.userMining.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { email: true, fullName: true } },
+        plan: { select: { name: true } }
+      }
+    })
+    res.json(minings)
+  } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.post('/minings/accrue-all', async (req, res) => {
+  try {
+    await accrueAllMinings(req.prisma)
+    res.json({ message: 'Successfully accrued all active minings' })
+  } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
 // Settings

@@ -3,7 +3,7 @@ import { useContext, useState } from 'react'
 import { AuthContext } from '../App'
 import {
   LayoutDashboard, Users, ArrowDownToLine, ArrowUpFromLine,
-  Pickaxe, Settings, LogOut, Menu, X, Shield
+  Pickaxe, Settings, LogOut, Menu, X, Shield, Activity
 } from 'lucide-react'
 
 export default function AdminLayout() {
@@ -18,6 +18,7 @@ export default function AdminLayout() {
       '/admin/deposits': 'Deposit Management',
       '/admin/withdrawals': 'Withdrawal Management',
       '/admin/plans': 'Manage Plans',
+      '/admin/minings': 'Active Minings',
       '/admin/settings': 'Platform Settings',
     }
     return map[location.pathname] || 'Admin'
@@ -29,6 +30,7 @@ export default function AdminLayout() {
     { to: '/admin/deposits', icon: ArrowDownToLine, label: 'Deposits' },
     { to: '/admin/withdrawals', icon: ArrowUpFromLine, label: 'Withdrawals' },
     { to: '/admin/plans', icon: Pickaxe, label: 'Mining Plans' },
+    { to: '/admin/minings', icon: Activity, label: 'Active Minings' },
     { to: '/admin/settings', icon: Settings, label: 'Settings' },
   ]
 

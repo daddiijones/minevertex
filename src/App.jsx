@@ -20,6 +20,7 @@ import AdminUsers from './pages/admin/Users'
 import AdminDeposits from './pages/admin/Deposits'
 import AdminWithdrawals from './pages/admin/Withdrawals'
 import AdminPlans from './pages/admin/ManagePlans'
+import AdminMinings from './pages/admin/ActiveMinings'
 import AdminSettings from './pages/admin/Settings'
 import HelpCenter from './pages/static/HelpCenter'
 import ContactUs from './pages/static/ContactUs'
@@ -101,6 +102,7 @@ function App() {
             <Route path="deposits" element={<AdminDeposits />} />
             <Route path="withdrawals" element={<AdminWithdrawals />} />
             <Route path="plans" element={<AdminPlans />} />
+            <Route path="minings" element={<AdminMinings />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
