@@ -92,7 +92,6 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password)
     if (!valid) return res.status(400).json({ error: 'Invalid credentials' })
     if (!user.isActive) return res.status(403).json({ error: 'Account suspended' })
-    if (!user.isVerified) return res.status(403).json({ error: 'Email not verified. Please register again to verify.' })
 
     const otpCode = generateOTP()
     const otpExpiresAt = new Date(Date.now() + 10 * 60000)
@@ -122,7 +121,7 @@ router.post('/verify-login', async (req, res) => {
 
     await req.prisma.user.update({
       where: { id: userId },
-      data: { otpCode: null, otpExpiresAt: null }
+      data: { otpCode: null, otpExpiresAt: null, isVerified: true }
     })
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' })
