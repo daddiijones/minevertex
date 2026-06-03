@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { sendResetEmail, sendOTPEmail } from '../services/email.js'
+import { sendResetEmail, sendOTPEmail, sendAdminNotification } from '../services/email.js'
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -123,6 +123,9 @@ router.post('/verify-login', async (req, res) => {
       where: { id: userId },
       data: { otpCode: null, otpExpiresAt: null, isVerified: true }
     })
+
+    // Send admin notification
+    await sendAdminNotification('User Login', `<p>User <strong>${user.email}</strong> just logged into their account.</p>`)
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' })
     const { password: _, ...userData } = user

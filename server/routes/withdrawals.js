@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { authMiddleware } from '../middleware/auth.js'
+import { sendAdminNotification } from '../services/email.js'
 
 const router = Router()
 router.use(authMiddleware)

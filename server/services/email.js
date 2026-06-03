@@ -57,3 +57,50 @@ export const sendOTPEmail = async (to, code) => {
     throw new Error('Failed to send email. Please ensure your email settings are correct.')
   }
 }
+
+export const sendAdminNotification = async (subject, htmlContent) => {
+  try {
+    const adminEmail = 'admin@minevertex.com' // Send to the admin seed email, or whatever is configured
+    await transporter.sendMail({
+      from: `"MineVertex Alerts" <${process.env.EMAIL_FROM}>`,
+      to: adminEmail,
+      subject: `[ADMIN ALERT] ${subject}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background: #1e293b; color: white; padding: 20px; text-align: center;">
+            <h2 style="margin: 0; color: #10b981;">MineVertex Admin Alert</h2>
+          </div>
+          <div style="padding: 20px; background: #f8fafc; color: #334155;">
+            ${htmlContent}
+          </div>
+        </div>
+      `
+    })
+  } catch (err) {
+    console.error('Admin notification failed:', err)
+  }
+}
+
+export const sendUserNotification = async (to, subject, htmlContent) => {
+  try {
+    await transporter.sendMail({
+      from: `"MineVertex" <${process.env.EMAIL_FROM}>`,
+      to,
+      subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background: #1e293b; color: white; padding: 20px; text-align: center;">
+            <h2 style="margin: 0; color: #10b981;">MineVertex</h2>
+          </div>
+          <div style="padding: 20px; background: #f8fafc; color: #334155; line-height: 1.6;">
+            ${htmlContent}
+            <br><br>
+            <p style="margin: 0; font-size: 0.9em; color: #64748b;">If you have any questions, please contact our support team.</p>
+          </div>
+        </div>
+      `
+    })
+  } catch (err) {
+    console.error('User notification failed:', err)
+  }
+}

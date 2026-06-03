@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { authMiddleware, adminMiddleware } from '../middleware/auth.js'
 import { accrueAllMinings } from '../services/miningAccrual.js'
+import { sendUserNotification } from '../services/email.js'
 
 const router = Router()
 router.use(authMiddleware, adminMiddleware)
@@ -84,6 +85,13 @@ router.put('/deposits/:id', async (req, res) => {
         await req.prisma.referral.update({ where: { id: referral.id }, data: { bonusEarned: { increment: bonus } } })
       }
     }
+
+    const user = await req.prisma.user.findUnique({ where: { id: deposit.userId } })
+    await sendUserNotification(user.email, `Deposit ${status}`, `
+      <h3>Deposit Update</h3>
+      <p>Your deposit of <strong>${deposit.amount} ${deposit.cryptoType}</strong> has been <strong>${status}</strong> by the admin.</p>
+    `)
+
     res.json(updated)
   } catch (err) { res.status(500).json({ error: err.message }) }
 })
@@ -117,6 +125,13 @@ router.put('/withdrawals/:id', async (req, res) => {
       })
     }
     const updated = await req.prisma.withdrawal.update({ where: { id: req.params.id }, data: { status } })
+
+    const user = await req.prisma.user.findUnique({ where: { id: withdrawal.userId } })
+    await sendUserNotification(user.email, `Withdrawal ${status}`, `
+      <h3>Withdrawal Update</h3>
+      <p>Your withdrawal request for <strong>${withdrawal.amount} ${withdrawal.cryptoType}</strong> has been <strong>${status}</strong> by the admin.</p>
+    `)
+
     res.json(updated)
   } catch (err) { res.status(500).json({ error: err.message }) }
 })

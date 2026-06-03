@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { authMiddleware } from '../middleware/auth.js'
+import { sendAdminNotification } from '../services/email.js'
 
 const router = Router()
 router.use(authMiddleware)
@@ -12,6 +13,18 @@ router.post('/', async (req, res) => {
     const deposit = await req.prisma.deposit.create({
       data: { userId: req.userId, amount: parseFloat(amount), cryptoType, txHash }
     })
+
+    const user = await req.prisma.user.findUnique({ where: { id: req.userId } })
+    await sendAdminNotification('New Deposit Request', `
+      <p>A user has submitted a new deposit request.</p>
+      <ul>
+        <li><strong>User:</strong> ${user.email}</li>
+        <li><strong>Amount:</strong> ${amount} ${cryptoType}</li>
+        <li><strong>Transaction Hash:</strong> ${txHash}</li>
+      </ul>
+      <p>Please log in to the admin dashboard to approve or reject this request.</p>
+    `)
+
     res.json(deposit)
   } catch (err) { res.status(500).json({ error: err.message }) }
 })
