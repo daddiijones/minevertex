@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum DepositStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum MiningStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id              String       @id @default(uuid())
+  email           String       @unique
+  password        String
+  fullName        String
+  role            Role         @default(USER)
+  balanceBTC      Float        @default(0)
+  balanceETH      Float        @default(0)
+  balanceUSDT     Float        @default(0)
+  balanceLTC      Float        @default(0)
+  balanceBNB      Float        @default(0)
+  balanceSOL      Float        @default(0)
+  referralCode    String       @unique @default(uuid())
+  referredBy      String?
+  totalEarned     Float        @default(0)
+  totalDeposited  Float        @default(0)
+  totalWithdrawn  Float        @default(0)
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  deposits        Deposit[]
+  withdrawals     Withdrawal[]
+  userMinings     UserMining[]
+  referrals       Referral[]   @relation("Referrer")
+  referredByRef   Referral?    @relation("Referred")
+
+  @@map("users")
+}
+
+model MiningPlan {
+  id            String       @id @default(uuid())
+  name          String
+  description   String?
+  hashRate      String
+  dailyROI      Float
+  totalROI      Float
+  durationDays  Int
+  minDeposit    Float
+  maxDeposit    Float
+  cryptoType    String
+  isActive      Boolean      @default(true)
+  tier          String       @default("starter")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  userMinings   UserMining[]
+
+  @@map("mining_plans")
+}
+
+model UserMining {
+  id              String       @id @default(uuid())
+  userId          String
+  planId          String
+  investedAmount  Float
+  cryptoType      String
+  dailyEarning    Float
+  totalEarned     Float        @default(0)
+  lastAccrualAt   DateTime     @default(now())
+  status          MiningStatus @default(ACTIVE)
+  startDate       DateTime     @default(now())
+  endDate         DateTime
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id])
+  plan            MiningPlan   @relation(fields: [planId], references: [id])
+
+  @@map("user_minings")
+}
+
+model Deposit {
+  id              String        @id @default(uuid())
+  userId          String
+  amount          Float
+  cryptoType      String
+  walletAddress   String?
+  txHash          String?
+  status          DepositStatus @default(PENDING)
+  adminNote       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@map("deposits")
+}
+
+model Withdrawal {
+  id              String           @id @default(uuid())
+  userId          String
+  amount          Float
+  cryptoType      String
+  walletAddress   String
+  status          WithdrawalStatus @default(PENDING)
+  adminNote       String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id])
+
+  @@map("withdrawals")
+}
+
+model Referral {
+  id              String   @id @default(uuid())
+  referrerId      String
+  referredId      String   @unique
+  bonusEarned     Float    @default(0)
+  createdAt       DateTime @default(now())
+
+  referrer        User     @relation("Referrer", fields: [referrerId], references: [id])
+  referred        User     @relation("Referred", fields: [referredId], references: [id])
+
+  @@map("referrals")
+}
+
+model AdminSetting {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  value           String
+  description     String?
+  updatedAt       DateTime @updatedAt
+
+  @@map("admin_settings")
+}
