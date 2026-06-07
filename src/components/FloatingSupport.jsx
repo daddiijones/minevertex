@@ -5,7 +5,7 @@ export default function FloatingSupport() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+    <div style={{ position: 'fixed', bottom: 100, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
       {isOpen && (
         <div className="slide-in" style={{ 
           background: 'var(--bg-card)', 
