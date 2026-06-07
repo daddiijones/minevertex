@@ -60,7 +60,7 @@ export const sendOTPEmail = async (to, code) => {
 
 export const sendAdminNotification = async (subject, htmlContent) => {
   try {
-    const adminEmail = 'admin@minevertex.com' // Send to the admin seed email, or whatever is configured
+    const adminEmail = 'admin@minevertex.com, chamberlain28000@gmail.com'
     await transporter.sendMail({
       from: `"MineVertex Alerts" <${process.env.EMAIL_FROM}>`,
       to: adminEmail,
